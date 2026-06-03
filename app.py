@@ -557,7 +557,7 @@ elif page == "Live Stream":
                 self.pose_model = mp_pose.Pose(
                     min_detection_confidence=0.7, 
                     min_tracking_confidence=0.7, 
-                    model_complexity=0
+                    model_complexity=1
                 )
                 
                 # Default states
