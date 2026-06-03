@@ -83,7 +83,7 @@ def process_frame(frame, source_name):
     """Shared pipeline for both Video Upload and Live WebRTC."""
     image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     
-    with mp_pose.Pose(min_detection_confidence=0.7, min_tracking_confidence=0.7, model_complexity=0) as pose_model:
+    with mp_pose.Pose(min_detection_confidence=0.7, min_tracking_confidence=0.7, model_complexity=1) as pose_model:
         results = pose_model.process(image_rgb)
         
         prediction = "Analyzing..."
