@@ -244,7 +244,7 @@ def render_metrics(action, conf, fps):
 #     token = client.tokens.create()
 #     return token.ice_servers
 
-@st.cache_data(ttl=43200) # Force a fresh token fetch every 12 hours
+# @st.cache_data(ttl=43200) # Force a fresh token fetch every 12 hours
 def get_ice_servers():
     """Fetches TURN servers from Twilio, falls back to Google STUN if keys are missing."""
     try:
