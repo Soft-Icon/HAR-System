@@ -11,7 +11,7 @@ from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
 import plotly.express as px
 import os
 from twilio.rest import Client
-from av import VideoFrame
+import av
 
 #imports to improve system UI here
 from streamlit_option_menu import option_menu
@@ -215,29 +215,44 @@ def render_metrics(action, conf, fps):
     cols[2].metric("Processing FPS", f"{fps:.1f}")
 
 # --- 5.5 WEBCAM NETWORK CONFIGURATION ---
-@st.cache_data
+# @st.cache_data
+# def get_ice_servers():
+#     """Fetches TURN servers from Twilio, falls back to Google STUN if keys are missing."""
+#     if not account_sid or not auth_token:
+#         try:
+#             # Checks Streamlit Secrets first
+#             account_sid = st.secrets["TWILIO_ACCOUNT_SID"]
+#             auth_token = st.secrets["TWILIO_AUTH_TOKEN"]
+#             client = Client(account_sid, auth_token)
+#             token = client.tokens.create()
+#             return token.ice_servers
+#         except Exception as e:
+#             # Fallback for local testing or missing secrets
+#             print(f"Twilio Secrets missing or failed. Using fallback Google STUN. Error: {e}")
+#             return [{"urls": ["stun:stun.l.google.com:19302"]}]
+#     # Fetch the TURN servers from Twilio
+#     client = Client(account_sid, auth_token)
+#     token = client.tokens.create()
+#     return token.ice_servers
+
+@st.cache_data(ttl=43200) # Force a fresh token fetch every 12 hours
 def get_ice_servers():
     """Fetches TURN servers from Twilio, falls back to Google STUN if keys are missing."""
-    # 1. Try grabbing from Hugging Face Environment Variables first
-    account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
-    auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
-
-    if not account_sid or not auth_token:
-        try:
-            # Checks Streamlit Secrets first
-            account_sid = st.secrets["TWILIO_ACCOUNT_SID"]
-            auth_token = st.secrets["TWILIO_AUTH_TOKEN"]
-            client = Client(account_sid, auth_token)
-            token = client.tokens.create()
-            return token.ice_servers
-        except Exception as e:
-            # Fallback for local testing or missing secrets
-            print(f"Twilio Secrets missing or failed. Using fallback Google STUN. Error: {e}")
-            return [{"urls": ["stun:stun.l.google.com:19302"]}]
-    # Fetch the TURN servers from Twilio
-    client = Client(account_sid, auth_token)
-    token = client.tokens.create()
-    return token.ice_servers
+    try:
+        # 1. Fetch credentials directly from Streamlit Secrets
+        account_sid = st.secrets["TWILIO_ACCOUNT_SID"]
+        auth_token = st.secrets["TWILIO_AUTH_TOKEN"]
+        
+        # 2. Request a fresh token from Twilio
+        client = Client(account_sid, auth_token)
+        token = client.tokens.create()
+        
+        return token.ice_servers
+        
+    except Exception as e:
+        # Fallback for local testing or if Twilio API fails
+        print(f"Twilio API failed or secrets missing. Using fallback STUN. Error: {e}")
+        return [{"urls": ["stun:stun.l.google.com:19302"]}]
 
 # --- 6. SIDEBAR ROUTING ---
 st.sidebar.title("ActionNet")
@@ -649,7 +664,6 @@ elif page == "Live Stream":
                 cv2.putText(img, f"CONF: {self.confidence:.1f}%", (20, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
                 
                 # Return the processed frame to the WebRTC stream
-                import av
                 return av.VideoFrame.from_ndarray(img, format="bgr24")
 
         # 2. Mount the Streamer using the custom class
