@@ -1,0 +1,23 @@
+# Virtual Environment
+venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Dataset / training artifacts
+data/
+datasets/
+*.csv
+*.npy
+
+# OS files
+.DS_Store
+Thumbs.db
+
+#TURN server files
+.streamlit/secrets.toml

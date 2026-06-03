@@ -1,0 +1,13 @@
+streamlit
+tornado
+streamlit-webrtc
+opencv-python
+mediapipe==0.10.14
+numpy
+pandas
+scikit-learn
+av
+twilio
+plotly
+streamlit-option-menu 
+streamlit-extras
