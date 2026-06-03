@@ -1,5 +1,13 @@
+import os
 import warnings
+# 1. Silence the C++ TensorFlow/MediaPipe warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+os.environ['GLOG_minloglevel'] = '2'
+
+# 2. Silence the Python Protobuf & Scikit-Learn warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="google.protobuf")
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
+
 import streamlit as st
 import cv2
 import numpy as np
@@ -11,7 +19,6 @@ from collections import deque
 import pickle
 from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
 import plotly.express as px
-import os
 from twilio.rest import Client
 import av
 
