@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 import streamlit as st
 import cv2
 import numpy as np
@@ -348,7 +350,7 @@ if page == "About":
         st.markdown("ActionNet captures video input and uses **MediaPipe Pose** to extract 33 3D landmarks per frame. It computes scale-normalized geometric features (e.g., wrist distance normalized by shoulder width) and tracks their temporal variance across a 15-frame buffer. This structured dataset is fed into an optimized Random Forest classifier that detects actions with high accuracy, even in noisy conditions.")
         st.image("https://developers.google.com/static/mediapipe/images/solutions/pose_landmarks_index.png", 
                  caption="MediaPipe Pose Landmarks (33 Keypoints)", 
-                 use_container_width=True)
+                 width = "stretch")
 
     with col2:
 
@@ -451,7 +453,7 @@ elif page == "Upload Video":
         #     cv2.putText(processed_frame, f"ACTION: {action}", (20, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
         #     cv2.putText(processed_frame, f"CONF: {conf:.1f}%", (20, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
             
-        #     video_placeholder.image(processed_frame, channels="BGR", use_container_width=True)
+        #     video_placeholder.image(processed_frame, channels="BGR", width = "stretch")
             
         #     if frame_count % 5 == 0:
         #         with metrics_placeholder.container():
@@ -480,7 +482,7 @@ elif page == "Upload Video":
             cv2.putText(processed_frame, f"ACTION: {action}", (20, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
             cv2.putText(processed_frame, f"CONF: {conf:.1f}%", (20, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
             
-            video_placeholder.image(processed_frame, channels="BGR", use_container_width=True)
+            video_placeholder.image(processed_frame, channels="BGR", width = "stretch")
             
             if frame_count % 5 == 0:
                 with metrics_placeholder.container():
@@ -554,7 +556,7 @@ elif page == "Live Stream":
 
         st.plotly_chart(
             fig,
-            use_container_width=True
+            width = "stretch"
         )
     col1, col2 = st.columns([3, 1])
     with col1:
@@ -689,10 +691,10 @@ elif page == "Live Stream":
 #     st.title("📜 Action History Log")
 #     if len(st.session_state.history) > 0:
 #         df = pd.DataFrame(st.session_state.history)
-#         st.dataframe(df, use_container_width=True)
+#         st.dataframe(df, width = "stretch")
         
 #         fig = px.line(df, x="time", y="confidence", color="action", title="Confidence Timeline")
-#         st.plotly_chart(fig, use_container_width=True)
+#         st.plotly_chart(fig, width = "stretch")
         
 #         if st.button("Clear History"):
 #             st.session_state.history = []
@@ -733,7 +735,7 @@ elif page == "History":
             text_auto='.1f' # Show the exact percentage on the bars
         )
         fig_bar.update_layout(showlegend=False)
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, width = "stretch")
         
         st.divider()
         
@@ -744,14 +746,14 @@ elif page == "History":
         with col1:
             # Line chart showing confidence over time
             fig_line = px.line(df, x="time", y="confidence", color="action", title="Confidence Timeline", markers=True)
-            st.plotly_chart(fig_line, use_container_width=True)
+            st.plotly_chart(fig_line, width = "stretch")
             
         with col2:
             # The raw data table
-            st.dataframe(df, use_container_width=True, hide_index=True)
+            st.dataframe(df, width = "stretch", hide_index=True)
             
                 # Clear button to reset the session state
-            if st.button("🗑️ Clear History", use_container_width=True):
+            if st.button("🗑️ Clear History", width = "stretch"):
                 st.session_state.history = []
                 st.rerun()
     else:
