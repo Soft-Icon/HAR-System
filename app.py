@@ -1,10 +1,10 @@
 import os
 import warnings
-# 1. Silence the C++ TensorFlow/MediaPipe warnings
+# Silence the C++ TensorFlow/MediaPipe warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 os.environ['GLOG_minloglevel'] = '2'
 
-# 2. Silence the Python Protobuf & Scikit-Learn warnings
+# Silence the Python Protobuf & Scikit-Learn warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="google.protobuf")
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 
@@ -22,13 +22,14 @@ import plotly.express as px
 from twilio.rest import Client
 import av
 
-#imports to improve system UI here
+#import modules to improve system UI here
 from streamlit_option_menu import option_menu
 from streamlit_extras.metric_cards import style_metric_cards
 import plotly.graph_objects as go
 
 # --- 1. PAGE CONFIGURATION ---
 st.set_page_config(page_title="ActionNet System", layout="wide", initial_sidebar_state="expanded")
+
 
 #*******UI improvements for better user experience and aesthetics********
 st.markdown("""
@@ -66,7 +67,7 @@ h1{
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. LOAD RANDOM FOREST MODEL ---
+# --- LOAD RANDOM FOREST MODEL ---
 @st.cache_resource
 def load_ml_model():
     with open('Human_actionV1.3.pkl', 'rb') as f:
@@ -76,7 +77,7 @@ model = load_ml_model()
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
 
-# --- 3. SESSION STATE (Memory across pages) ---
+# --- SESSION STATE (Memory across pages) ---
 WINDOW_SIZE = 15
 if "pose_buffer" not in st.session_state:
     st.session_state.pose_buffer = deque(maxlen=WINDOW_SIZE)
@@ -87,7 +88,7 @@ if "history" not in st.session_state:
 if "confidence_threshold" not in st.session_state:
     st.session_state.confidence_threshold = 0.55
 
-# --- 4. CORE INFERENCE ENGINE (410 FEATURES) ---
+# --- CORE INFERENCE ENGINE (410 FEATURES) ---
 def process_frame(frame, source_name):
     """Shared pipeline for both Video Upload and Live WebRTC."""
     image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -105,29 +106,8 @@ def process_frame(frame, source_name):
             spatial_features = [val for lm in pose for val in (lm.x, lm.y, lm.z, lm.visibility)]
             st.session_state.pose_buffer.append(spatial_features)
             
-            # # B. Custom Geometry Extraction
-            # l_shoulder = np.array([pose[11].x, pose[11].y])
-            # r_shoulder = np.array([pose[12].x, pose[12].y])
-            # l_wrist = np.array([pose[15].x, pose[15].y])
-            # r_wrist = np.array([pose[16].x, pose[16].y])
-            # l_hip = np.array([pose[23].x, pose[23].y])
-            # r_hip = np.array([pose[24].x, pose[24].y])
-            # l_ankle = np.array([pose[27].x, pose[27].y])
-            # r_ankle = np.array([pose[28].x, pose[28].y])
-            
-            # shoulder_width = np.linalg.norm(l_shoulder - r_shoulder) + 1e-6
-            
-            # wrist_dist = np.linalg.norm(l_wrist - r_wrist) / shoulder_width
-            # ankle_dist = np.linalg.norm(l_ankle - r_ankle) / shoulder_width
-            # l_hand_raised = (pose[15].y - pose[11].y) / shoulder_width
-            # r_hand_raised = (pose[16].y - pose[12].y) / shoulder_width
-            # torso_height = np.linalg.norm(l_shoulder - l_hip) / shoulder_width
-            
-            # custom_frame_features = [
-            #     wrist_dist, ankle_dist, l_hand_raised, r_hand_raised, 
-            #     torso_height, pose[23].y, pose[24].y 
-            # ]
-            # --- HELPER ARRAYS FOR EASY MATH --- modified
+        
+            # --- HELPER ARRAYS ---- customed geometry extraction
             l_shoulder = np.array([pose[11].x, pose[11].y])
             r_shoulder = np.array([pose[12].x, pose[12].y])
             l_wrist = np.array([pose[15].x, pose[15].y])
@@ -224,27 +204,7 @@ def render_metrics(action, conf, fps):
     cols[2].metric("Processing FPS", f"{fps:.1f}")
 
 # --- 5.5 WEBCAM NETWORK CONFIGURATION ---
-# @st.cache_data
-# def get_ice_servers():
-#     """Fetches TURN servers from Twilio, falls back to Google STUN if keys are missing."""
-#     if not account_sid or not auth_token:
-#         try:
-#             # Checks Streamlit Secrets first
-#             account_sid = st.secrets["TWILIO_ACCOUNT_SID"]
-#             auth_token = st.secrets["TWILIO_AUTH_TOKEN"]
-#             client = Client(account_sid, auth_token)
-#             token = client.tokens.create()
-#             return token.ice_servers
-#         except Exception as e:
-#             # Fallback for local testing or missing secrets
-#             print(f"Twilio Secrets missing or failed. Using fallback Google STUN. Error: {e}")
-#             return [{"urls": ["stun:stun.l.google.com:19302"]}]
-#     # Fetch the TURN servers from Twilio
-#     client = Client(account_sid, auth_token)
-#     token = client.tokens.create()
-#     return token.ice_servers
 
-# @st.cache_data(ttl=43200) # Force a fresh token fetch every 12 hours
 def get_ice_servers():
     """Fetches TURN servers from Twilio, falls back to Google STUN if keys are missing."""
     try:
@@ -266,8 +226,8 @@ def get_ice_servers():
 # --- 6. SIDEBAR ROUTING ---
 st.sidebar.title("ActionNet")
 
+
 #******Upgrading to a more modern and visually appealing sidebar navigation using streamlit_option_menu*
-# page = st.sidebar.radio("Navigation", ["About", "Upload Video", "Live Stream", "History", "Settings"])
 
 with st.sidebar:
     st.image(
@@ -296,21 +256,8 @@ with st.sidebar:
         default_index=0
     )
 
-# if page == "About":
 
-    
-
-# ==========================================
 # PAGE 1: ABOUT
-# ==========================================
-# if page == "About":
-#     st.title("About ActionNet")
-#     st.markdown("ActionNet is a real-time Human Action Recognition system powered by MediaPipe and an optimized Random Forest classifier.")
-#     st.markdown("It processes a **15-frame rolling window**, analyzing 410 temporal and geometric features—such as shoulder-normalized wrist distance and hip variance—to detect actions like Walking, Jumping, and Clapping with high precision.")
-
-# ==========================================
-# PAGE 1: ABOUT
-# ==========================================
 if page == "About":
     # st.title("ℹ️ About ActionNet")
     # st.markdown("ActionNet is a real-time Human Action Recognition (HAR) system built for edge inference. It transforms raw video streams into a structured temporal dataset, utilizing a **15-frame rolling window** to analyze human motion.")
@@ -378,37 +325,13 @@ if page == "About":
         
          Analytics Dashboard
         """, width="stretch")
-    # st.divider()
-    
-    # col1, col2 = st.columns(2)
-    # with col1:
-    #     st.subheader("1. Spatial & Geometric Extraction")
-    #     st.markdown("The system uses **MediaPipe Pose** to extract 33 3D anatomical landmarks per frame. Instead of relying purely on raw coordinates, ActionNet calculates scale-normalized geometric ratios (e.g., wrist-to-wrist distance normalized by shoulder width) to ensure the model performs accurately regardless of the subject's distance from the camera.")
-        
-        # st.markdown("**Euclidean Distance Formula (Scale Normalization):**")
-        # st.latex(r"d(p_1, p_2) = \frac{\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}}{W_{shoulder}}")
-        
-        # st.markdown("**Temporal Variance Formula (Motion Tracking):**")
-        # st.markdown("To detect dynamic actions like jumping or walking, the variance of these features is calculated across the 15-frame buffer:")
-        # st.latex(r"\sigma^2 = \frac{1}{N} \sum_{i=1}^{N} (x_i - \mu)^2")
+   
 
-    # with col2:
-        # Using the official MediaPipe topology image URL so it loads automatically
-        
-    # st.divider()
 
-    # st.subheader("2. The Random Forest Classifier")
-    # st.markdown("The extracted sequence is flattened into a **410-feature tabular array** containing the Mean, Standard Deviation, and Peak-to-Peak Range of the movements. This array is passed into an optimized Random Forest algorithm.")
-    # st.markdown("Random Forest is an ensemble learning method that constructs a multitude of decision trees. It splits the data based on the features that minimize **Gini Impurity**, making it incredibly resilient to the overlapping noise of human motion.")
-    
-    # st.markdown("**Gini Impurity Formula:**")
-    # st.latex(r"Gini = 1 - \sum_{i=1}^{C} (p_i)^2")
-
-# ==========================================
 # PAGE 2: UPLOAD VIDEO
-# ==========================================
+
 elif page == "Upload Video":
-    # st.title("📼 Video Upload Inference") ---upgrading the UI
+    # upgrading the UI
     st.markdown("""
 <div class='hero-box'>
 <h1>📼 Video Analysis</h1>
@@ -445,27 +368,7 @@ elif page == "Upload Video":
         start_time = time.time()
         frame_count = 0
         
-        # while cap.isOpened():
-        #     ret, frame = cap.read()
-        #     if not ret: break
-            
-        #     frame_count += 1
-        #     frame = cv2.resize(frame, (640, 480))
-            
-        #     # Pass to our main engine
-        #     processed_frame, action, conf = process_frame(frame, "Upload")
-            
-        #     # UI Overlay
-        #     cv2.rectangle(processed_frame, (10, 10), (350, 90), (0, 0, 0), -1)
-        #     cv2.putText(processed_frame, f"ACTION: {action}", (20, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-        #     cv2.putText(processed_frame, f"CONF: {conf:.1f}%", (20, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
-            
-        #     video_placeholder.image(processed_frame, channels="BGR", width = "stretch")
-            
-        #     if frame_count % 5 == 0:
-        #         with metrics_placeholder.container():
-        #             fps = frame_count / (time.time() - start_time)
-        #             render_metrics(action, conf, fps)
+ 
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret: break
@@ -499,7 +402,7 @@ elif page == "Upload Video":
         cap.release()
         st.success("Video processing complete!")
 
-        # Delete the physical file from the Hugging Face server so it doesn't crash!
+        # Delete the physical file from the server so it doesn't crash!
         try:
             os.remove(tfile.name)
         except Exception as e:
@@ -507,40 +410,13 @@ elif page == "Upload Video":
             
         st.success("Video processing complete! Temporary server files cleaned up.")
 
-# ==========================================
-# PAGE 3: LIVE STREAM
-# ==========================================
-# elif page == "Live Stream":
-#     st.title("🎥 Real-Time WebRTC Inference")
-    
-#     col1, col2 = st.columns([3, 1])
-#     with col1:
-#         video_placeholder = st.empty()
-        
-#         def video_callback(frame):
-#             img = frame.to_ndarray(format="bgr24")
-#             processed_img, action, conf = process_frame(img, "Live Stream")
-            
-#             cv2.rectangle(processed_img, (10, 10), (350, 90), (0, 0, 0), -1)
-#             cv2.putText(processed_img, f"LIVE: {action}", (20, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-#             cv2.putText(processed_img, f"CONF: {conf:.1f}%", (20, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
-            
-#             return mp.Image(image_format=mp.ImageFormat.SRGB, data=processed_img).to_msg_frame()
 
-#         ctx = webrtc_streamer(
-#             key="live-stream",
-#             mode=WebRtcMode.SENDRECV,
-#             rtc_configuration=RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}),
-#             video_frame_callback=video_callback,
-#             media_stream_constraints={"video": True, "audio": False},
-#             async_processing=True,
-#         )
 
-# ==========================================
+
 # PAGE 3: LIVE STREAM
-# ==========================================
+
 elif page == "Live Stream":
-    # st.title("🎥 Real-Time WebRTC Inference") --- apply the UI upgrade here too
+    # st.title("🎥 Real-Time WebRTC Inference") --- applied the UI upgrade here too
     st.markdown("""
 <div class='hero-box'>
 <h1>🎥 Live Action Monitoring</h1>
@@ -576,7 +452,7 @@ elif page == "Live Stream":
                 self.pose_buffer = deque(maxlen=WINDOW_SIZE)
                 self.custom_buffer = deque(maxlen=WINDOW_SIZE)
                 
-                # MASSIVE PERFORMANCE BOOST: Initialize MediaPipe ONCE here
+                # MASSIVE PERFORMANCE BOOST: Initialized MediaPipe ONCE here
                 # instead of opening and closing it on every single frame.
                 self.pose_model = mp_pose.Pose(
                     min_detection_confidence=0.7, 
@@ -691,29 +567,13 @@ elif page == "Live Stream":
         if ctx.video_processor:
             ctx.video_processor.threshold = st.session_state.confidence_threshold
 
-# ==========================================
-# PAGE 4: HISTORY
-# ==========================================
-# elif page == "History":
-#     st.title("📜 Action History Log")
-#     if len(st.session_state.history) > 0:
-#         df = pd.DataFrame(st.session_state.history)
-#         st.dataframe(df, width = "stretch")
-        
-#         fig = px.line(df, x="time", y="confidence", color="action", title="Confidence Timeline")
-#         st.plotly_chart(fig, width = "stretch")
-        
-#         if st.button("Clear History"):
-#             st.session_state.history = []
-#             st.rerun()
-#     else:
-#         st.info("No actions logged yet.")
 
-# ==========================================
+
+
 # PAGE 4: HISTORY
-# ==========================================
+
 elif page == "History":
-    # st.title("📜 Action History & Analytics") --- apply upgrade to the UI
+    # st.title("📜 Action History & Analytics") --- applied upgrade to the UI
     st.markdown("""
 <div class='hero-box'>
 <h1>📊 Analytics Center</h1>
@@ -766,9 +626,10 @@ elif page == "History":
     else:
         st.write("")
         st.info("No actions logged yet. Go to the Live Stream or Upload Video page to generate data.")
-# ==========================================
+
+
 # PAGE 5: SETTINGS
-# ==========================================
+
 elif page == "Settings":
     st.title("⚙️ Threshold Settings")
     st.session_state.confidence_threshold = st.slider(
